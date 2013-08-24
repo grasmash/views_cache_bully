@@ -44,7 +44,7 @@ function hook_permission() {
  */
 function views_cache_bully_form_views_ui_admin_settings_advanced_alter(&$form, &$form_state, $form_id) {
   unset($form['cache']['clear_cache']);
-  unset($form['cache']['views_skip_cache']);
+  unset($form['cache']['skip_cache']);
   $form['cache']['views_cache_bully'] = array(
     '#markup' => t('Views Cache Bully has disabled these settings.'),
   );
@@ -66,12 +66,12 @@ function views_cache_bully_form_views_ui_edit_display_form_alter(&$form, &$form_
 }
 
 /**
- * Implements hook_views_pre_view().
+ * Implements hook_views_pre_build().
  */
-function views_cache_bully_views_pre_build(&$view) {
-  if ($view->display_handler->get_plugin('cache')->plugin_name == 'none') {
+function views_cache_bully_views_pre_build(ViewExecutable $view) {
+  if ($view->display_handler->getPlugin('cache')->definition['id'] == 'none') {
     if (!views_cache_bully_view_is_exempt($view)) {
-      $view->display_handler->override_option('cache', array(
+      $view->display_handler->overrideOption('cache', array(
         'type' => 'time',
         'results_lifespan' => config('views_cache_bully.settings')->get('results_lifespan'),
         'output_lifespan' => config('views_cache_bully.settings')->get('output_lifespan'),
@@ -91,17 +91,16 @@ function views_cache_bully_views_pre_build(&$view) {
  */
 function views_cache_bully_view_is_exempt($view) {
   $exemptions = array_filter(config('views_cache_bully.settings')->get('exemptions'));
-
   // If administrative settings is enabled, exempt views with exposed filters.
   if (config('views_cache_bully.settings')->get('exempt_exposed')) {
     if (empty($view->inited)) {
       watchdog('views_cache_bully', 'Error, Views Cache Bully could not evaluate view exemption for view @view_name, view was not initialized.', array('@view_name' => $view->name));
     }
-    elseif ($view->display[$view->current_display]->handler->uses_exposed()) {
+    elseif ($view->display_handler->usesExposed()) {
       return TRUE;
     }
   }
 
   // If view is in exemption list, return TRUE.
-  return in_array($view->name, $exemptions);
+  return in_array($view->storage->id, $exemptions);
 }
