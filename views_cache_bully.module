@@ -21,10 +21,10 @@ function views_cache_bully_menu() {
 }
 
 /**
- * Implements hook_views_api().
+ * Implements hook_views_plugins_alter().
  */
-function views_cache_bully_views_api() {
-  return array('api' => 3);
+function views_cache_bully_views_plugins_cache_alter(&$plugins) {
+  $plugins['none']['title'] = t('Views Cache Bully');
 }
 
 /**
