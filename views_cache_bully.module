@@ -67,8 +67,11 @@ function views_cache_bully_form_views_ui_edit_display_form_alter(&$form, &$form_
 
 /**
  * Implements hook_views_pre_build().
+ *
+ * @todo Implementing this hook generates an error, seems like $view isn't
+ * being passed by reference. Core bug?
  */
-function views_cache_bully_views_pre_build(ViewExecutable $view) {
+function views_cache_bully_views_pre_build(ViewExecutable &$view) {
   if ($view->display_handler->getPlugin('cache')->definition['id'] == 'none') {
     if (!views_cache_bully_view_is_exempt($view)) {
       $view->display_handler->overrideOption('cache', array(
